@@ -3,4 +3,5 @@ __pycache__/
 .DS_Store
 .env
 data/raw/
-data/embeddings/
+data/processed/
+
