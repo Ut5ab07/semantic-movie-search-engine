@@ -49,6 +49,28 @@ Key fields used:
 4. Created unified `semantic_text` column
 5. Saved cleaned dataset for downstream use
 
+## Data Flow Architecture
+
+```
+Raw Dataset (TMDB)
+        |
+        v
+Data Cleaning & Feature Engineering
+        |
+        v
+semantic_text Creation
+        |
+        v
+Embedding Generation (384-d vectors)
+        |
+        v
+Saved Embeddings (.npy file)
+        |
+        v
+Search Modules (Keyword / Semantic / Hybrid)
+```
+
+
 ---
 
 ## 🏗 System Architecture
@@ -59,6 +81,41 @@ The system is divided into modular components:
 * Keyword Search Module (TF-IDF)
 * Semantic Search Module (Sentence Embeddings)
 * Hybrid Search Module (Semantic + Genre Filter)
+
+## High-Level System Architecture
+```
+                +----------------------+
+                |      User Query      |
+                +----------+-----------+
+                           |
+                           v
+                +----------------------+
+                |   Query Processing   |
+                |  (Optional Genre     |
+                |    Detection)        |
+                +----------+-----------+
+                           |
+        ---------------------------------------------
+        |                     |                     |
+        v                     v                     v
++----------------+   +----------------+   +----------------+
+|  TF-IDF Model  |   | Embedding Model|   | Hybrid Logic   |
+| (Sparse Vectors)|  | (Dense Vectors)|   | (Filter +      |
+|  Cosine Sim.)  |   | Cosine Sim.)   |   |  Semantic)     |
++--------+-------+   +--------+-------+   +--------+-------+
+         |                    |                    |
+         v                    v                    v
+   Ranked Results       Ranked Results       Filtered + Ranked
+         |                    |                    |
+         -------------------------------------------
+                           |
+                           v
+                +----------------------+
+                |     Final Output     |
+                |  (Top-N Movies)      |
+                +----------------------+
+```
+
 
 Each search strategy is implemented as a separate class inside the `src/` directory.
 
@@ -165,6 +222,14 @@ python test_search.py
 3. Enter queries inside the script or modify `test_search.py`.
 
 ---
+
+## Example Output
+
+query: highly motivating boxing story
+
+Below is a sample output of the system when running a query using the Hybrid Search module:
+
+![Search Output Screenshot](assets/output.png)
 
 ## 🔮 Future Improvements
 
