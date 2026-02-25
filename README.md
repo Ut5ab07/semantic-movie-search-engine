@@ -49,7 +49,7 @@ Key fields used:
 4. Created unified `semantic_text` column
 5. Saved cleaned dataset for downstream use
 
-## Data Flow Architecture
+## 🔄 Data Flow Architecture
 
 ```
 Raw Dataset (TMDB)
@@ -82,7 +82,7 @@ The system is divided into modular components:
 * Semantic Search Module (Sentence Embeddings)
 * Hybrid Search Module (Semantic + Genre Filter)
 
-## High-Level System Architecture
+## 🏗 High-Level System Architecture
 ```
                 +----------------------+
                 |      User Query      |
@@ -223,7 +223,7 @@ python test_search.py
 
 ---
 
-## Example Output
+## 📸 Example Output
 
 query: highly motivating boxing story
 
@@ -253,3 +253,7 @@ This project demonstrates:
 
 ---
 
+## 📎 Author
+Utsab Raj Acharya
+
+---
