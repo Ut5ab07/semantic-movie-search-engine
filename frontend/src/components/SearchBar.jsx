@@ -14,7 +14,7 @@ export default function SearchBar({ value, onChange, onSubmit, isLoading }) {
       <button
         type="submit"
         disabled={isLoading}
-        className="flex h-[38px] items-center justify-center rounded-lg border border-transparent bg-[var(--button)] px-5 text-sm font-semibold text-[var(--button-text)] transition hover:bg-[var(--button-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-[38px] items-center justify-center rounded-lg border border-transparent bg-[var(--button)] px-5 text-sm font-semibold text-[var(--button-text)] transition hover:bg-[var(--accent)] hover:text-[#0f1419] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? "Searching..." : "Search"}
       </button>
