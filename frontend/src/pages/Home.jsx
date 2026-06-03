@@ -9,9 +9,11 @@ import ErrorState from "../components/ErrorState.jsx";
 import { searchMovies } from "../services/api.js";
 
 const EXAMPLES = [
-  "Movies about friendship and adventure",
-  "Psychological thrillers with plot twists",
-  "Space exploration dramas"
+  { label: "🚀 Space Exploration", value: "Space exploration dramas" },
+  { label: "🧠 Psychological Thriller", value: "Psychological thrillers with plot twists" },
+  { label: "🎭 Drama", value: "Movies about friendship and adventure" },
+  { label: "⚽ Sports", value: "Sports stories about underdogs" },
+  { label: "🕵️ Mystery", value: "Mysteries with clever detectives" }
 ];
 
 export default function Home() {
@@ -54,12 +56,31 @@ export default function Home() {
         <section className="flex flex-col gap-6">
           <div className="rounded-xl border border-[var(--border)] bg-[var(--search)] px-6 py-8 md:px-10">
             <div className="flex flex-col gap-8">
-              <div className="max-w-2xl">
-                <h1 className="text-3xl font-semibold md:text-4xl">Semantic Movie Search</h1>
-                <p className="mt-4 text-base text-[var(--muted)]">
-                  Search movies using natural language. Results are powered by the existing
-                  semantic engine.
-                </p>
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--muted-soft)]">
+                    FilmSeek Semantic Search
+                  </p>
+                  <h1 className="mt-3 text-3xl font-semibold md:text-4xl">
+                    Tell FilmSeek what kind of movie you're looking for.
+                  </h1>
+                  <p className="mt-4 text-base text-[var(--muted)]">
+                    Describe a mood, genre, theme, or story and let the mascot guide you to a match.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center md:justify-end">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-5">
+                    <img
+                      src="/filmseek-logo.png"
+                      alt="FilmSeek mascot with binoculars"
+                      className="h-28 w-auto object-contain"
+                    />
+                    <p className="mt-3 text-center text-xs text-[var(--muted)]">
+                      FilmSeek is on the lookout.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <SearchBar
@@ -73,12 +94,12 @@ export default function Home() {
                 <span className="text-[var(--text)]">Example searches:</span>
                 {EXAMPLES.map((example) => (
                   <button
-                    key={example}
+                    key={example.label}
                     type="button"
-                    onClick={() => handleExampleClick(example)}
+                    onClick={() => handleExampleClick(example.value)}
                     className="rounded-md border border-[var(--border)] bg-[var(--input)] px-3 py-1 text-[var(--pill-text)] transition hover:border-[var(--accent)] hover:bg-[#2d333b]"
                   >
-                    {example}
+                    {example.label}
                   </button>
                 ))}
               </div>
@@ -88,9 +109,9 @@ export default function Home() {
 
         <section className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-semibold">Results</h2>
+            <h2 className="text-lg font-semibold">Movies FilmSeek Found</h2>
             {lastQuery && (
-              <p className="text-sm text-[var(--muted)]">Search: "{lastQuery}"</p>
+              <p className="text-sm text-[var(--muted)]">You asked for: "{lastQuery}"</p>
             )}
           </div>
 

@@ -7,7 +7,7 @@ export default function SearchBar({ value, onChange, onSubmit, isLoading }) {
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Try: space exploration dramas with hope"
+        placeholder="Try: a hopeful space adventure with heart"
         className="h-[56px] w-full flex-1 rounded-[14px] border border-[var(--border)] bg-[var(--input)] px-6 text-[20px] font-normal text-[var(--text)] placeholder:text-[16px] placeholder:text-[var(--muted-soft)] focus:outline-none focus:border-[var(--accent)] sm:h-[60px] lg:h-[68px]"
       />
       <button
