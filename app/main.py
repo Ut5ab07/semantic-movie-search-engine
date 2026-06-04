@@ -1,14 +1,30 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import router
+from app.services import init_services
 
 
-app = FastAPI(title="Semantic Movie Search API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize and cache service instances (dataframes, embeddings, model) at startup
+    init_services()
+    yield
+
+
+app = FastAPI(title="Semantic Movie Search API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

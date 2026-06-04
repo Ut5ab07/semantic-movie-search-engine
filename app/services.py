@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
 from src.semantic_search import SemanticSearch
 
@@ -54,6 +55,15 @@ def _get_searcher() -> SemanticSearch:
     return _searcher
 
 
+def init_services() -> None:
+    """Pre-loads all datasets and initializes the SemanticSearch instance on startup."""
+    print("Pre-loading datasets and initializing SemanticSearch...")
+    _load_processed()
+    _load_raw_meta()
+    _get_searcher()
+    print("Datasets loaded and SemanticSearch initialized successfully.")
+
+
 def _parse_overview(semantic_text: str) -> str:
     if not semantic_text:
         return ""
@@ -91,11 +101,20 @@ def search_movies(query: str, top_n: int = 12) -> List[Dict[str, Any]]:
     raw_meta = _load_raw_meta()
 
     results_df = searcher.search(query, top_n=top_n)
+    
+    # Preserve original indices of the results for similarity lookup
+    results_df = results_df.copy()
+    results_df["original_index"] = results_df.index
+
     merged = results_df.merge(
         processed[["id", "title", "vote_average", "genres_clean", "semantic_text"]],
         on=["title", "vote_average"],
         how="left",
     ).drop_duplicates(subset=["id", "title", "vote_average"])
+
+    # Compute similarity using the SentenceTransformer model and precomputed embeddings
+    query_embedding = searcher.model.encode([query])
+    similarities = cosine_similarity(query_embedding, searcher.embeddings)[0]
 
     results: List[Dict[str, Any]] = []
     for _, row in merged.iterrows():
@@ -104,6 +123,9 @@ def search_movies(query: str, top_n: int = 12) -> List[Dict[str, Any]]:
         overview = meta.get("overview") or _parse_overview(row.get("semantic_text", ""))
         release_year = _parse_release_year(meta.get("release_date", ""))
         genres = _parse_genres(meta.get("genres", ""), row.get("genres_clean", ""))
+
+        orig_idx = row.get("original_index")
+        similarity = float(similarities[int(orig_idx)]) if pd.notna(orig_idx) else None
 
         results.append(
             {
@@ -114,8 +136,56 @@ def search_movies(query: str, top_n: int = 12) -> List[Dict[str, Any]]:
                 "release_year": release_year,
                 "poster_url": None,
                 "vote_average": float(row.get("vote_average")) if pd.notna(row.get("vote_average")) else None,
-                "similarity": None,  # TODO: compute similarity using SemanticSearch embeddings if needed.
+                "similarity": similarity,
             }
         )
 
     return results
+
+
+def get_movie_by_id(movie_id: int) -> Dict[str, Any] | None:
+    """Retrieves movie metadata by its unique ID."""
+    raw_meta = _load_raw_meta()
+    processed = _load_processed()
+
+    meta = raw_meta.get(movie_id)
+    if not meta:
+        # Check in processed dataframe if it doesn't exist in raw
+        processed_row = processed[processed["id"] == movie_id]
+        if processed_row.empty:
+            return None
+        row = processed_row.iloc[0]
+        title = row.get("title", "")
+        overview = _parse_overview(row.get("semantic_text", ""))
+        vote_average = float(row.get("vote_average")) if pd.notna(row.get("vote_average")) else None
+        genres = _parse_genres("", row.get("genres_clean", ""))
+        release_year = None
+    else:
+        title = meta.get("title", "")
+        overview = meta.get("overview", "")
+        vote_average = float(meta.get("vote_average")) if pd.notna(meta.get("vote_average")) else None
+        genres = _parse_genres(meta.get("genres", ""), "")
+        release_year = _parse_release_year(meta.get("release_date", ""))
+
+    return {
+        "id": movie_id,
+        "title": title,
+        "overview": overview,
+        "genres": genres,
+        "release_year": release_year,
+        "poster_url": None,
+        "vote_average": vote_average,
+        "similarity": None,
+    }
+
+
+def recommend_movies(movie_id: int, top_n: int = 5) -> List[Dict[str, Any]]:
+    """Generates recommendations for a movie using semantic search on its title."""
+    movie = get_movie_by_id(movie_id)
+    if not movie or not movie.get("title"):
+        return []
+
+    # Get one more result than requested to filter out the query movie itself
+    results = search_movies(movie["title"], top_n=top_n + 1)
+    recommendations = [r for r in results if r.get("id") != movie_id][:top_n]
+    return recommendations

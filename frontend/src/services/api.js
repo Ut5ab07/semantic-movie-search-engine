@@ -8,9 +8,11 @@ const api = axios.create({
 });
 
 export async function searchMovies(query, topN = 12) {
-  const response = await api.post("/search", {
-    query,
-    top_n: topN
+  const response = await api.get("/search", {
+    params: {
+      q: query,
+      top_n: topN
+    }
   });
   return response.data;
 }
