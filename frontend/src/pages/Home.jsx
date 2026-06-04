@@ -112,18 +112,20 @@ export default function Home() {
 
         <section className="flex flex-col gap-6">
           {results.length > 0 && !isLoading && !error && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <img
-                  src="/filmseek_mascot.png"
-                  alt="FilmSeek mascot"
-                  className="h-10 w-10 object-contain"
-                />
-                <h2 className="text-lg font-semibold">🎬 FilmSeek Found Some Matches</h2>
+            <div className="flex items-center gap-4 md:gap-6">
+              <img
+                src="/filmseek_successSearch.png"
+                alt="FilmSeek mascot"
+                className="h-24 w-auto sm:h-36 md:h-48 object-contain"
+              />
+              <div className="flex flex-col gap-1 md:gap-2">
+                <h2 className="text-xl font-bold md:text-2xl text-[var(--text)]">🎬 FilmSeek Found Some Matches</h2>
+                {lastQuery && (
+                  <p className="text-sm md:text-base text-[var(--muted)]">
+                    You asked for: <span className="text-[var(--text)] font-medium">"{lastQuery}"</span>
+                  </p>
+                )}
               </div>
-              {lastQuery && (
-                <p className="text-sm text-[var(--muted)]">You asked for: "{lastQuery}"</p>
-              )}
             </div>
           )}
 
