@@ -119,7 +119,7 @@ export default function Home() {
                 className="h-24 w-auto sm:h-36 md:h-48 object-contain"
               />
               <div className="flex flex-col gap-1 md:gap-2">
-                <h2 className="text-xl font-bold md:text-2xl text-[var(--text)]">🎬 FilmSeek Found Some Matches</h2>
+                <h2 className="text-xl font-bold md:text-2xl text-[var(--text)]"> FilmSeek Found Some Matches</h2>
                 {lastQuery && (
                   <p className="text-sm md:text-base text-[var(--muted)]">
                     You asked for: <span className="text-[var(--text)] font-medium">"{lastQuery}"</span>
