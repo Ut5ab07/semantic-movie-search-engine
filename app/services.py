@@ -1,12 +1,20 @@
+import os
 import json
+import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
 
 from src.semantic_search import SemanticSearch
 
+# Initialize dotenv configuration
+load_dotenv()
+
+# Setup services-specific logger
+logger = logging.getLogger("semantic_search_api.services")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROCESSED_PATH = BASE_DIR / "data" / "processed" / "movies_semantic.csv"
@@ -21,29 +29,37 @@ _searcher = None
 def _load_processed() -> pd.DataFrame:
     global _processed_df
     if _processed_df is None:
-        df = pd.read_csv(PROCESSED_PATH)
-        df["semantic_text"] = df["semantic_text"].fillna("").astype(str)
-        df["genres_clean"] = df["genres_clean"].fillna("").astype(str)
-        _processed_df = df
+        logger.info(f"Loading processed dataset from: {PROCESSED_PATH}")
+        try:
+            df = pd.read_csv(PROCESSED_PATH)
+            df["semantic_text"] = df["semantic_text"].fillna("").astype(str)
+            df["genres_clean"] = df["genres_clean"].fillna("").astype(str)
+            _processed_df = df
+            logger.info("Processed dataset loaded successfully.")
+        except Exception as exc:
+            logger.error(f"Failed to load processed dataset: {exc}", exc_info=True)
+            raise exc
     return _processed_df
 
 
 def _load_raw_meta() -> Dict[int, Dict[str, Any]]:
     global _raw_meta
     if _raw_meta is None:
+        logger.info(f"Loading raw metadata from: {RAW_PATH}")
         try:
             raw = pd.read_csv(
                 RAW_PATH,
                 usecols=["id", "overview", "release_date", "genres", "title", "vote_average"],
             )
-        except Exception:
+            raw["overview"] = raw["overview"].fillna("").astype(str)
+            raw["release_date"] = raw["release_date"].fillna("").astype(str)
+            raw["genres"] = raw["genres"].fillna("").astype(str)
+            _raw_meta = raw.set_index("id").to_dict(orient="index")
+            logger.info("Raw metadata loaded successfully.")
+        except Exception as exc:
+            logger.warning(f"Could not load raw metadata: {exc}. Graceful fallback fallback active.")
             _raw_meta = {}
             return _raw_meta
-
-        raw["overview"] = raw["overview"].fillna("").astype(str)
-        raw["release_date"] = raw["release_date"].fillna("").astype(str)
-        raw["genres"] = raw["genres"].fillna("").astype(str)
-        _raw_meta = raw.set_index("id").to_dict(orient="index")
     return _raw_meta
 
 
@@ -51,17 +67,24 @@ def _get_searcher() -> SemanticSearch:
     global _searcher
     if _searcher is None:
         df = _load_processed()
-        _searcher = SemanticSearch(df, str(EMBEDDINGS_PATH))
+        logger.info(f"Initializing SemanticSearch engine (embeddings path: {EMBEDDINGS_PATH})...")
+        try:
+            _searcher = SemanticSearch(df, str(EMBEDDINGS_PATH))
+            logger.info("SemanticSearch engine initialized successfully.")
+        except Exception as exc:
+            logger.error(f"Failed to initialize SemanticSearch engine: {exc}", exc_info=True)
+            raise exc
     return _searcher
 
 
 def init_services() -> None:
     """Pre-loads all datasets and initializes the SemanticSearch instance on startup."""
-    print("Pre-loading datasets and initializing SemanticSearch...")
+    logger.info("Pre-loading datasets and initializing SemanticSearch...")
     _load_processed()
     _load_raw_meta()
     _get_searcher()
-    print("Datasets loaded and SemanticSearch initialized successfully.")
+    logger.info("Datasets loaded and SemanticSearch cached successfully.")
+
 
 
 def _parse_overview(semantic_text: str) -> str:
@@ -72,7 +95,7 @@ def _parse_overview(semantic_text: str) -> str:
     return semantic_text[:280].strip()
 
 
-def _parse_release_year(date_str: str) -> int | None:
+def _parse_release_year(date_str: str) -> Optional[int]:
     if not date_str:
         return None
     if len(date_str) >= 4 and date_str[:4].isdigit():
@@ -143,7 +166,7 @@ def search_movies(query: str, top_n: int = 12) -> List[Dict[str, Any]]:
     return results
 
 
-def get_movie_by_id(movie_id: int) -> Dict[str, Any] | None:
+def get_movie_by_id(movie_id: int) -> Optional[Dict[str, Any]]:
     """Retrieves movie metadata by its unique ID."""
     raw_meta = _load_raw_meta()
     processed = _load_processed()
