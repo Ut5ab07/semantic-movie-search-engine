@@ -5,7 +5,7 @@ export default function Navbar() {
         <img
           src="/filmseek-logo.png"
           alt="FilmSeek"
-          className="h-[100px] sm:h-[144px] w-auto object-contain"
+          className="h-[144px] w-auto object-contain"
         />
       </div>
     </nav>

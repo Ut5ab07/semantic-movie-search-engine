@@ -39,18 +39,7 @@ export default function Home() {
       setResults(data.results || []);
       setLastQuery(sanitized);
     } catch (err) {
-      console.error("Search error details:", err);
-      if (err.code === "ECONNABORTED") {
-        setError("The search request timed out. Please check your connection and try again.");
-      } else if (!err.response) {
-        setError("The search backend is offline or unreachable. Please check if the server is running.");
-      } else if (err.response.status === 404) {
-        setError("The search API endpoint was not found on the server.");
-      } else if (err.response.status === 500) {
-        setError("The server encountered an error processing your query. Please try different terms.");
-      } else {
-        setError("Something went wrong while searching. Please check your connection and try again.");
-      }
+      setError("Something went wrong while searching. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -80,23 +69,21 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="relative mt-6 flex flex-col items-center gap-6">
-                <div className="flex flex-row items-center justify-center gap-1.5 sm:gap-2 lg:gap-3 w-full max-w-2xl px-4">
-                  <img
-                    src="/filmseek_search.png"
-                    alt="FilmSeek mascot ready to search"
-                    className="pointer-events-none h-[85px] sm:h-[150px] lg:h-[190px] w-auto object-contain shrink-0"
-                  />
-                  <div className="relative w-auto max-w-[190px] sm:max-w-[240px] lg:max-w-[280px] rounded-2xl border border-[var(--accent)]/60 bg-[var(--card)] px-4 py-3 text-xs sm:text-xs lg:text-sm text-[var(--muted)] shadow-[0_12px_30px_rgba(15,20,25,0.35)] shrink-0">
-                    <p className="font-semibold text-[var(--text)] text-left">
-                      I'm on the lookout for your next favorite movie.
-                    </p>
-                    <p className="mt-1 text-left">Try a mood, genre, theme, actor, or story description.</p>
-                    <span className="absolute left-[-6px] sm:left-[-8px] lg:left-[-10px] top-[40%] -translate-y-1/2 h-2 w-2 sm:h-2.5 sm:w-2.5 lg:h-3 lg:w-3 rounded-full border border-[var(--accent)]/60 bg-[var(--card)]"></span>
-                    <span className="absolute left-[-10px] sm:left-[-14px] lg:left-[-18px] top-[40%] -translate-y-1/2 h-1.5 w-1.5 sm:h-2 sm:w-2 lg:h-2.5 lg:w-2.5 rounded-full border border-[var(--accent)]/60 bg-[var(--card)]"></span>
-                  </div>
+              <div className="relative mt-6 pt-24 md:pt-28">
+                <img
+                  src="/filmseek_search.png"
+                  alt="FilmSeek mascot ready to search"
+                  className="pointer-events-none absolute left-1/2 -top-10 z-20 h-[240px] w-auto -translate-x-1/2 object-contain sm:h-[260px] md:h-[300px]"
+                />
+                <div className="pointer-events-none absolute left-1/2 -top-10 z-30 w-[220px] translate-x-[30%] rounded-3xl border border-[var(--accent)]/60 bg-[var(--card)] px-4 py-3 text-xs text-[var(--muted)] shadow-[0_12px_30px_rgba(15,20,25,0.35)] sm:w-[240px]">
+                  <p className="font-semibold text-[var(--text)]">
+                    I'm on the lookout for your next favorite movie.
+                  </p>
+                  <p className="mt-2">Try a mood, genre, theme, actor, or story description.</p>
+                  <span className="absolute -left-4 bottom-3 h-3 w-3 rounded-full border border-[var(--accent)]/60 bg-[var(--card)]"></span>
+                  <span className="absolute -left-6 bottom-1 h-2 w-2 rounded-full border border-[var(--accent)]/60 bg-[var(--card)]"></span>
                 </div>
-                <div className="relative z-30 w-full mt-2 sm:mt-4">
+                <div className="relative z-30">
                   <SearchBar
                     value={query}
                     onChange={setQuery}
@@ -106,8 +93,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs text-[var(--muted)] sm:justify-start sm:gap-4">
-                <span className="text-[var(--text)] text-center sm:text-left w-full sm:w-auto">Need inspiration? Try searching for:</span>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--muted)]">
+                <span className="text-[var(--text)]">Need inspiration? Try searching for:</span>
                 {EXAMPLES.map((example) => (
                   <button
                     key={example}
@@ -142,7 +129,7 @@ export default function Home() {
             </div>
           )}
 
-          {isLoading && <LoadingState message="Searching through thousands of movies..." />}
+          {isLoading && <LoadingState />}
 
           {!isLoading && error && <ErrorState message={error} />}
 
